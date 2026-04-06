@@ -25,30 +25,34 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { action, prompt, tone, draft } = (await req.json()) as AssistantRequest;
+  const body = (await req.json()) as AssistantRequest;
   const userEmail = session.user.email;
   const accessToken = session.accessToken;
 
   try {
-    if (action === "compose") {
+    if (body.action === "compose") {
       // 1. Fetch Context from RAG (Inbox memory)
-      const similarityResults = await searchSimilarEmails(prompt, userEmail, 3);
+      const similarityResults = await searchSimilarEmails(body.prompt, userEmail, 3);
       const context = similarityResults
         .map((r) => `[Subject: ${r.metadata?.subject}] ${r.metadata?.summary}`)
         .join("\n");
 
       // 2. Generate Draft with Tone
-      const response = await composeEmail(prompt, context || "No previous context found.", tone || "Professional");
+      const response = await composeEmail(
+        body.prompt,
+        context || "No previous context found.",
+        body.tone || "Professional"
+      );
       return NextResponse.json(response);
     }
 
-    if (action === "send") {
+    if (body.action === "send") {
       if (!accessToken) throw new Error("Missing access token");
-      if (!draft || !draft.to || !draft.subject || !draft.body) {
+      if (!body.draft || !body.draft.to || !body.draft.subject || !body.draft.body) {
         throw new Error("Incomplete draft provided.");
       }
 
-      await sendEmail(accessToken, draft.to, draft.subject, draft.body);
+      await sendEmail(accessToken, body.draft.to, body.draft.subject, body.draft.body);
       return NextResponse.json({ success: true, message: "Matrix Dispatched" });
     }
 

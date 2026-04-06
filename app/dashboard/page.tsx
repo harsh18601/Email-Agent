@@ -167,7 +167,8 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background text-foreground flex overflow-hidden">
       {/* Premium Sidebar */}
-      <aside className="w-72 glass border-r hidden lg:flex flex-col p-8 h-screen sticky top-0 overflow-hidden">
+      <aside className="w-72 glass border-r hidden lg:flex h-screen sticky top-0 overflow-y-auto overflow-x-hidden">
+        <div className="flex min-h-full w-full flex-col p-8">
         {/* Fixed Header */}
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
@@ -184,7 +185,7 @@ export default function Dashboard() {
         </motion.div>
 
         {/* Scrollable Nav Area */}
-        <nav className="flex-1 overflow-y-auto space-y-8 scrollbar-hide pr-2">
+        <nav className="space-y-8 pr-2">
           <div className="space-y-3">
             <p className="text-[10px] uppercase tracking-[0.3em] text-white/20 font-black pl-5 mb-4">Command Center</p>
             <NavLink 
@@ -251,6 +252,7 @@ export default function Dashboard() {
             <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
             Terminal Disconnect
           </button>
+        </div>
         </div>
       </aside>
 
