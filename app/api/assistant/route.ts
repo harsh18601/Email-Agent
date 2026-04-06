@@ -4,15 +4,30 @@ import { composeEmail } from "@/lib/groq";
 import { searchSimilarEmails } from "@/lib/rag";
 import { sendEmail } from "@/lib/gmail";
 
+type AssistantRequest =
+  | {
+      action: "compose";
+      prompt: string;
+      tone?: string;
+    }
+  | {
+      action: "send";
+      draft: {
+        to: string;
+        subject: string;
+        body: string;
+      };
+    };
+
 export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { action, prompt, tone, draft } = await req.json();
+  const { action, prompt, tone, draft } = (await req.json()) as AssistantRequest;
   const userEmail = session.user.email;
-  const accessToken = (session as any)?.accessToken;
+  const accessToken = session.accessToken;
 
   try {
     if (action === "compose") {
@@ -38,8 +53,9 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown assistant error";
     console.error("Assistant API Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

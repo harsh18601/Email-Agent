@@ -34,16 +34,16 @@
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
     background: 
-      radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(30, 64, 175, 0.15) 0px, transparent 50%),
-      radial-gradient(at 50% 100%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
+      radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.08) 0px, transparent 42%),
+      radial-gradient(at 100% 0%, rgba(30, 64, 175, 0.07) 0px, transparent 40%),
+      radial-gradient(at 50% 100%, rgba(139, 92, 246, 0.05) 0px, transparent 38%),
       #09090b;
     background-attachment: fixed;
   }
 }
 
 .glass {
-  @apply backdrop-blur-xl bg-card border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.8)];
+  @apply backdrop-blur-xl bg-card border border-white/8 shadow-[0_8px_28px_0_rgba(0,0,0,0.65)];
 }
 
 .glass-hover {
@@ -59,7 +59,7 @@
 }
 
 .glow {
-  @apply shadow-[0_0_20px_rgba(139,92,246,0.3)];
+  @apply shadow-[0_0_16px_rgba(139,92,246,0.2)];
 }
 
 /* Custom Scrollbar */

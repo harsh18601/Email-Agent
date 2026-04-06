@@ -18,13 +18,19 @@ export interface EmailData {
   body?: string;
 }
 
+const urgencyOrder: Record<string, number> = {
+  High: 0,
+  Medium: 1,
+  Low: 2,
+};
+
 export async function initDb() {
   // No-op for Upstash Vector
   console.log("Upstash Vector initialized as primary storage.");
   return true;
 }
 
-export async function saveEmail(email: EmailData) {
+export async function saveEmail() {
   // Use a placeholder vector if we don't have one yet, or handle it in the RAG layer
   // For now, we assume the RAG layer handles the actual embedding
   // This saveEmail is now just a wrapper for the upsert
@@ -46,10 +52,20 @@ export async function getEmails(userEmail: string, limit = 50) {
 
     console.log(`[Aether DB] Found ${results.length} intelligence nodes in grid.`);
 
-    return results.map(r => ({
-      id: r.id,
-      ...r.metadata as any
-    })).sort((a, b) => new Date(b.received_at).getTime() - new Date(a.received_at).getTime());
+    return results
+      .map((r) => ({
+        id: r.id,
+        ...(r.metadata as EmailData),
+      }))
+      .sort((a, b) => {
+        const urgencyDelta = (urgencyOrder[a.urgency] ?? 99) - (urgencyOrder[b.urgency] ?? 99);
+        if (urgencyDelta !== 0) return urgencyDelta;
+
+        const scoreDelta = b.importance_score - a.importance_score;
+        if (scoreDelta !== 0) return scoreDelta;
+
+        return new Date(b.received_at).getTime() - new Date(a.received_at).getTime();
+      });
   } catch (error) {
     console.error("Upstash Fetch Error:", error);
     return [];

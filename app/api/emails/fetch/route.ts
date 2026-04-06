@@ -4,13 +4,19 @@ import { fetchGmailEmails, getEmailDetails } from "@/lib/gmail";
 import { analyzeEmail } from "@/lib/groq";
 import { storeEmailVector } from "@/lib/rag";
 
+const INGEST_BATCH_SIZE = 15;
+
+type SessionWithAccessToken = Awaited<ReturnType<typeof auth>> & {
+  accessToken?: string;
+};
+
 /**
  * Vercel Cron Job entry point or Manual Trigger
  * To simulate/test: GET /api/emails/fetch
  */
 export async function GET(request: Request) {
   // 1. Authenticate (Session-based for manual trigger or CRON_SECRET for background)
-  const session = await auth();
+  const session = (await auth()) as SessionWithAccessToken;
   const authHeader = request.headers.get("authorization");
   const isCron = authHeader === `Bearer ${process.env.CRON_SECRET}`;
 
@@ -20,7 +26,7 @@ export async function GET(request: Request) {
 
   // Use session email or a dummy email for background processing
   const userEmail = session?.user?.email || "background-service";
-  const accessToken = (session as any)?.accessToken;
+  const accessToken = session?.accessToken;
 
   if (!accessToken) {
     return NextResponse.json({ success: false, message: "No access token found in session." }, { status: 400 });
@@ -29,7 +35,7 @@ export async function GET(request: Request) {
     try {
     // 2. Fetch latest email IDs
     console.log(`[Aether Ingest] Initializing scan for ${userEmail}...`);
-    const emailIds = await fetchGmailEmails(accessToken, 5); 
+    const emailIds = await fetchGmailEmails(accessToken, INGEST_BATCH_SIZE); 
     console.log(`[Aether Ingest] Found ${emailIds.length} candidate messages.`);
 
     const results = [];
@@ -59,16 +65,18 @@ export async function GET(request: Request) {
         });
 
         results.push({ id, status: "processed" });
-      } catch (err: any) {
-        console.error(`[Aether Ingest] Error on message ${id}:`, err.message);
-        results.push({ id, status: "error", error: err.message });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Unknown message processing error";
+        console.error(`[Aether Ingest] Error on message ${id}:`, message);
+        results.push({ id, status: "error", error: message });
       }
     }
 
     console.log(`[Aether Ingest] Sync complete. Processed ${results.length} nodes.`);
-    return NextResponse.json({ success: true, processed: results.length });
-  } catch (error: any) {
+    return NextResponse.json({ success: true, processed: results.length, synced: emailIds.length });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown ingestion error";
     console.error("Ingestion Error:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

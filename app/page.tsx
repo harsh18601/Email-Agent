@@ -2,8 +2,8 @@
 
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { signIn, useSession } from "next-auth/react";
-import { Sparkles, ArrowRight, Shield, Zap, Target, Loader2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { Sparkles, ArrowRight, Shield, Zap, Target, Loader2, BellRing, BrainCircuit, ShieldAlert } from "lucide-react";
 
 export default function Home() {
   const { status } = useSession();
@@ -31,7 +31,7 @@ export default function Home() {
       >
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border-primary/20 text-primary text-xs font-black uppercase tracking-[0.2em] mb-4">
           <Sparkles size={14} />
-          Autonomous Neural Perimeter
+          AI Email Intelligence
         </div>
         
         <h1 className="text-6xl md:text-8xl font-black tracking-[calc(-0.05em)] hero-gradient leading-none uppercase">
@@ -39,8 +39,7 @@ export default function Home() {
         </h1>
         
         <p className="max-w-2xl mx-auto text-muted-foreground/80 text-lg md:text-xl font-medium leading-relaxed tracking-tight">
-          The next generation of autonomous email dispatch. Neural priority detection, 
-          AI-driven summarization, and elite inbox monitoring.
+          Real-time AI-powered email intelligence and threat detection for teams that need to spot risk, summarize priority messages, and act fast.
         </p>
       </motion.div>
 
@@ -58,11 +57,22 @@ export default function Home() {
             <Loader2 className="animate-spin" />
           ) : (
             <>
-              {status === "authenticated" ? "Launch Neural Grid" : "Establish Connection"}
+              {status === "authenticated" ? "Open Dashboard" : "Connect Inbox"}
               <ArrowRight className="group-hover:translate-x-1 transition-transform" />
             </>
           )}
         </button>
+      </motion.div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45 }}
+        className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl w-full"
+      >
+        <SignalCard icon={<BellRing className="text-red-300" />} title="Critical alerts" detail="Surface unusual sign-ins, risky senders, and high-priority threats." />
+        <SignalCard icon={<BrainCircuit className="text-primary" />} title="AI summaries" detail="Convert raw email noise into clear context, reasons, and next steps." />
+        <SignalCard icon={<ShieldAlert className="text-emerald-300" />} title="Review workflow" detail="Mark safe, investigate deeper, or dismiss low-value alerts in one place." />
       </motion.div>
 
       {/* Feature Grid */}
@@ -74,18 +84,18 @@ export default function Home() {
       >
         <FeatureCard 
           icon={<Shield className="text-primary" />} 
-          title="Neural Filtering" 
-          desc="Advanced priority detection using Groq-powered inference." 
+          title="Threat Detection" 
+          desc="Advanced risk scoring and suspicious activity detection using Groq-powered inference." 
         />
         <FeatureCard 
           icon={<Zap className="text-indigo-400" />} 
           title="Instant Context" 
-          desc="Upstash Vector RAG for deep semantic email understanding." 
+          desc="Upstash Vector RAG turns noisy inbox activity into concise, searchable intelligence." 
         />
         <FeatureCard 
           icon={<Target className="text-violet-400" />} 
-          title="Action Priority" 
-          desc="Identifying deadlines and task items before you even read." 
+          title="Action Workflow" 
+          desc="Review alerts, scan the inbox, and move directly from signal to response." 
         />
       </motion.div>
     </div>
@@ -100,6 +110,18 @@ function FeatureCard({ icon, title, desc }: { icon: React.ReactNode; title: stri
       </div>
       <h3 className="text-xl font-bold">{title}</h3>
       <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+    </div>
+  );
+}
+
+function SignalCard({ icon, title, detail }: { icon: React.ReactNode; title: string; detail: string }) {
+  return (
+    <div className="rounded-[1.75rem] border border-white/8 bg-white/5 px-5 py-4 text-left backdrop-blur-xl">
+      <div className="flex items-center gap-3 text-sm font-bold text-white">
+        {icon}
+        {title}
+      </div>
+      <p className="mt-3 text-sm leading-relaxed text-white/60">{detail}</p>
     </div>
   );
 }
