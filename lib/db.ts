@@ -53,10 +53,21 @@ export async function getEmails(userEmail: string, limit = 50) {
     console.log(`[Aether DB] Found ${results.length} intelligence nodes in grid.`);
 
     return results
-      .map((r) => ({
-        id: r.id,
-        ...(r.metadata as EmailData),
-      }))
+      .map((r) => {
+        const metadata = (r.metadata as unknown as Partial<EmailData>) ?? {};
+        return {
+          sender: metadata.sender ?? "",
+          subject: metadata.subject ?? "",
+          summary: metadata.summary ?? "",
+          urgency: metadata.urgency ?? "Low",
+          importance_score: metadata.importance_score ?? 0,
+          received_at: metadata.received_at ?? new Date(0).toISOString(),
+          user_email: metadata.user_email ?? userEmail,
+          category: metadata.category ?? "Uncategorized",
+          body: metadata.body,
+          id: r.id,
+        };
+      })
       .sort((a, b) => {
         const urgencyDelta = (urgencyOrder[a.urgency] ?? 99) - (urgencyOrder[b.urgency] ?? 99);
         if (urgencyDelta !== 0) return urgencyDelta;

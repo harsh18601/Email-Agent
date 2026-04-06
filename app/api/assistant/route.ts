@@ -27,7 +27,7 @@ export async function POST(req: Request) {
 
   const body = (await req.json()) as AssistantRequest;
   const userEmail = session.user.email;
-  const accessToken = session.accessToken;
+  const accessToken = (session as { accessToken?: string } | null)?.accessToken;
 
   try {
     if (body.action === "compose") {

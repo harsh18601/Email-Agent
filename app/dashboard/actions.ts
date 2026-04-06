@@ -13,7 +13,7 @@ export async function fetchUserEmails() {
   }
 
   const emails = await getEmails(session.user.email, DEFAULT_EMAIL_LIMIT);
-  const accessToken = session.accessToken;
+  const accessToken = (session as { accessToken?: string } | null)?.accessToken;
 
   let activeEmailIds: Set<string> | null = null;
   if (accessToken) {
@@ -32,12 +32,12 @@ export async function fetchUserEmails() {
   }
 
   const visibleEmails = activeEmailIds
-    ? emails.filter((email) => activeEmailIds.has(email.id))
+    ? emails.filter((email) => activeEmailIds.has(String(email.id)))
     : emails;
   
   // Transform DB format to UI format if needed
   return visibleEmails.map(e => ({
-    id: e.id,
+    id: String(e.id),
     sender: e.sender,
     subject: e.subject,
     summary: e.summary,

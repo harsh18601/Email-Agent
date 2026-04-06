@@ -9,6 +9,12 @@ type TokenWithOAuth = {
   error?: string;
 };
 
+type SessionWithOAuth = {
+  accessToken?: string;
+  provider?: string;
+  error?: string;
+};
+
 async function refreshGoogleAccessToken(token: TokenWithOAuth): Promise<TokenWithOAuth> {
   if (!token.refreshToken) {
     return { ...token, error: "MissingRefreshToken" };
@@ -77,16 +83,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return token;
       }
 
-      if (token.expiresAt && Date.now() < token.expiresAt * 1000) {
+      const expiresAt = typeof token.expiresAt === "number" ? token.expiresAt : Number(token.expiresAt);
+      if (Number.isFinite(expiresAt) && Date.now() < expiresAt * 1000) {
         return token;
       }
 
       return refreshGoogleAccessToken(token as TokenWithOAuth);
     },
     async session({ session, token }) {
-      session.accessToken = token.accessToken;
-      session.provider = token.provider;
-       session.error = token.error;
+      const sessionWithOAuth = session as typeof session & SessionWithOAuth;
+      sessionWithOAuth.accessToken = token.accessToken as string | undefined;
+      sessionWithOAuth.provider = token.provider as string | undefined;
+      sessionWithOAuth.error = token.error as string | undefined;
       return session;
     },
   },

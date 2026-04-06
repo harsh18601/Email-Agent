@@ -241,7 +241,11 @@ export function AIAssistant({ emails }: { emails: EmailInsight[] }) {
 
                           <div className="flex gap-4 pt-4">
                              <button 
-                                onClick={() => dispatchEmail(msg.draft)}
+                                onClick={() => {
+                                  if (msg.draft) {
+                                    void dispatchEmail(msg.draft);
+                                  }
+                                }}
                                 className="flex-1 py-5 primary-gradient rounded-2xl text-xs font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 glow hover:scale-[1.02] active:scale-[0.98] transition-all"
                              >
                                 <Send size={18} />

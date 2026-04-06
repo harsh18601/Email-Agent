@@ -6,17 +6,13 @@ import { storeEmailVector } from "@/lib/rag";
 
 const INGEST_BATCH_SIZE = 15;
 
-type SessionWithAccessToken = Awaited<ReturnType<typeof auth>> & {
-  accessToken?: string;
-};
-
 /**
  * Vercel Cron Job entry point or Manual Trigger
  * To simulate/test: GET /api/emails/fetch
  */
 export async function GET(request: Request) {
   // 1. Authenticate (Session-based for manual trigger or CRON_SECRET for background)
-  const session = (await auth()) as SessionWithAccessToken;
+  const session = await auth();
   const authHeader = request.headers.get("authorization");
   const isCron = authHeader === `Bearer ${process.env.CRON_SECRET}`;
 
@@ -26,7 +22,7 @@ export async function GET(request: Request) {
 
   // Use session email or a dummy email for background processing
   const userEmail = session?.user?.email || "background-service";
-  const accessToken = session?.accessToken;
+  const accessToken = (session as { accessToken?: string } | null)?.accessToken;
 
   if (!accessToken) {
     return NextResponse.json({ success: false, message: "No access token found in session." }, { status: 400 });
